@@ -1,0 +1,83 @@
+# Self-host Bigcapital — the accounting backbone (Phase 1–2).
+# Provides quotes, invoices, payment tracking, receipts, vendor bills,
+# a double-entry ledger, and audit-ready reports.
+#
+#   cp .env.example .env && docker compose up -d
+#   open http://localhost:3000
+#
+# Pinned to release tags rather than :latest so environments are reproducible.
+
+services:
+  bigcapital-server:
+    image: bigcapitalhq/server:latest
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+      - mongo
+      - redis
+    environment:
+      NODE_ENV: production
+      # Application DB (system-level: users, orgs, subscriptions)
+      SYSTEM_DB_HOST: mariadb
+      SYSTEM_DB_USER: ${DB_USER}
+      SYSTEM_DB_PASSWORD: ${DB_PASSWORD}
+      SYSTEM_DB_NAME: bigcapital_system
+      # Per-tenant DB (the actual books: ledger, invoices, etc.)
+      TENANT_DB_HOST: mariadb
+      TENANT_DB_USER: ${DB_USER}
+      TENANT_DB_PASSWORD: ${DB_PASSWORD}
+      TENANT_DB_NAME_PREFIX: bigcapital_tenant_
+      # Mongo (audit logs / activity feed)
+      MONGODB_DATABASE_URL: mongodb://mongo:27017/bigcapital
+      # Redis (jobs & cache)
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # Secrets
+      JWT_SECRET: ${JWT_SECRET}
+      # Outbound email (invoices, receipts, payment reminders)
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+    expose:
+      - "3000"
+
+  bigcapital-webapp:
+    image: bigcapitalhq/webapp:latest
+    restart: unless-stopped
+    depends_on:
+      - bigcapital-server
+    ports:
+      - "3000:80"
+    environment:
+      # The webapp proxies /api to the server container
+      BIGCAPITAL_SERVER_URL: http://bigcapital-server:3000
+
+  mariadb:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mariadb-data:
+  mongo-data:
+  redis-data:

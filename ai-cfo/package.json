@@ -1,0 +1,21 @@
+{
+  "name": "ai-cfo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Claude-powered CFO copilot over the Bigcapital ledger",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  }
+}
