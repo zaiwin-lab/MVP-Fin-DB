@@ -75,3 +75,14 @@ ai-cfo/                # Phase 3 — the Claude-powered CFO brain
     ledger-tools.ts    # typed tools that read the Bigcapital API
     index.ts           # CLI entry — ask the CFO a question
 ```
+
+
+---
+
+## Portfolio Status & Delivery Role
+
+**Status:** Architecture and integration prototype; not a substitute for regulated accounting, tax or professional financial advice.
+
+Product strategy, finance-workflow design and solution direction are led by **Zaiwin Kassim**, together with the **KOBIS AI Prodigy Team**, using supervised AI-assisted development.
+
+Production adoption requires accountant review, security hardening, backup and recovery, access controls, audit validation, licensing review and organisation-specific financial configuration.
