@@ -1,88 +1,98 @@
-# MVP Fin DB — Finance OS
+# ZK Finance OS — Ledger-Grounded CFO Copilot
 
-A one-stop finance centre for the business: **auto quote → invoice → payment tracking → receipts & acknowledgments → audit-ready management accounts → CFO-level forecasting, budgeting & investment planning.**
+> **Maturity:** Architecture and integration prototype · implemented read-only AI agent, unverified end-to-end deployment
 
-Built on a proven open-source accounting backbone ([Bigcapital](https://github.com/bigcapitalhq/bigcapital)) with a custom AI layer on top (Claude API). We don't reinvent double-entry bookkeeping — we self-host a battle-tested engine and build our differentiation (the AI CFO) where it matters.
+ZK Finance OS explores a finance operating model that combines an open-source accounting backbone with a read-only AI copilot. Its differentiating layer is a Claude-based command-line agent that selects financial reports, reads ledger results and answers management questions without writing back to the books.
 
-## The three layers
+## Business problem
 
-```
-┌───────────────────────────────────────────────────────────────┐
-│  Layer 3 — AI CFO brain  (ai-cfo/ — Claude API)                │
-│  chat→quote · receipt OCR · cash forecast · budget-vs-actual   │
-│  CFO Q&A · investment scenario planning                        │
-├───────────────────────────────────────────────────────────────┤
-│  Layer 2 — Double-entry ledger  (Bigcapital, self-hosted)      │
-│  every quote/invoice/payment/receipt auto-posts a journal      │
-│  entry → P&L · balance sheet · cash flow · AR/AP aging          │
-│  · trial balance — management accounts fall out for free       │
-├───────────────────────────────────────────────────────────────┤
-│  Layer 1 — Quote-to-Cash pipeline  (Bigcapital)                │
-│  estimate → invoice → payment link → tracking → receipt        │
-│  mirrored on the vendor side (bills in, payments out)          │
-└───────────────────────────────────────────────────────────────┘
-```
+Small organisations often separate quotations, invoices, collections, accounting reports and management decisions across different tools and manual processes. This weakens visibility and makes it harder for leaders to understand profitability, liquidity, receivables and upcoming obligations. ZK Finance OS tests an architecture in which operational accounting remains inside a structured ledger while AI helps leaders interpret authorised reports.
 
-The secret that makes everything "recorded properly" and audit-ready: **the workflow IS the bookkeeping.** You never do accounting separately — issuing an invoice, receiving a payment, and sending a receipt each post a journal entry automatically. From that one ledger, every management report and audit trail is a drill-down away.
+## Intended users
 
-## Roadmap
+- Business owners and executive leadership
+- Finance managers and internal finance teams
+- Accountants validating management-report workflows
+- Technical teams evaluating ledger-to-AI integration
+- Portfolio reviewers assessing responsible financial-agent architecture
 
-| Phase | Deliverable | Where |
-|-------|-------------|-------|
-| **1 — Quote-to-Cash** | Self-host Bigcapital; configure quotes, invoices, payment tracking, receipts, vendor bills | `docker-compose.yml` |
-| **2 — Management accounts** | Chart of accounts, tax config, report packs (P&L / BS / cash flow / AR-AP aging) audit-ready | Bigcapital admin |
-| **3 — AI CFO layer** | Chat-to-quote, receipt OCR → entries, cash forecast, budget-vs-actual alerts, CFO Q&A, investment scenarios | `ai-cfo/` |
+## Demonstrated capabilities
 
-## Quick start
+- Docker Compose definition for a self-hosted Bigcapital environment
+- Accounting-service dependencies covering MariaDB, MongoDB and Redis
+- TypeScript Claude agent using the Anthropic SDK tool runner
+- Five typed, read-only ledger tools:
+  - profit and loss
+  - balance sheet
+  - cash flow
+  - receivables ageing
+  - payables ageing
+- Date-bound tool parameters validated with Zod
+- Agent instructions requiring tool-grounded numbers and explicit assumptions
+- Command-line question interface
+- Error handling for missing API credentials
 
-### 1. Run the accounting backbone
+## Strategic value
+
+The architecture demonstrates a responsible pattern for financial AI: retain transaction entry and ledger mutation inside established accounting workflows, and expose only narrowly scoped read tools to the model. This limits autonomous action while allowing management to explore financial questions in natural language.
+
+## What is actually implemented
+
+The repository includes working TypeScript source for a Claude tool-running agent and read-only HTTP wrappers for five Bigcapital report endpoints. It also includes a Docker Compose environment intended to host the accounting backbone.
+
+The repository does **not** contain evidence that the full stack has been successfully deployed against a configured organisation, that every assumed API endpoint matches the selected Bigcapital release, or that the generated answers have been reconciled by an accountant. Forecasting, OCR, chat-to-quote, budgeting alerts and investment-scenario workflows remain roadmap concepts unless implemented elsewhere.
+
+The current Docker Compose file uses `latest` tags for the Bigcapital server and web application. Those are not reproducibly pinned releases and should be replaced with reviewed version tags before controlled deployment.
+
+## Technology
+
+- TypeScript and Node.js
+- Anthropic SDK tool runner
+- Zod schemas for tool inputs
+- Bigcapital API integration
+- Docker Compose
+- MariaDB, MongoDB and Redis
+- Environment-based secrets and service configuration
+
+## Delivery role
+
+**Ts. Zaiwin Kassim** leads product strategy, finance-workflow framing, solution architecture and supervised AI-assisted delivery with the **KOBIS AI Prodigy Team**. This portfolio evidence demonstrates an integration approach and implemented agent layer; it does not claim audited accounts, financial performance, regulatory approval or production adoption.
+
+## Responsible-use boundaries
+
+- The copilot is a management-support tool, not an accountant, auditor, tax adviser, investment adviser or authorised approver.
+- Every material figure and conclusion must be reconciled to the source ledger and reviewed by qualified finance personnel.
+- Read-only tools reduce mutation risk but do not prevent prompt injection, excessive data exposure, incorrect endpoint mappings or misleading interpretation.
+- Ledger access tokens and AI API keys must remain in a protected secrets system and must never be committed or exposed to client-side code.
+- Financial data requires least-privilege access, encryption, retention controls, backups, recovery testing and auditable user activity.
+- Forecasts and scenarios must show assumptions, ranges and uncertainty; they must not be presented as guarantees.
+- Any operational accounting configuration requires accountant review, jurisdiction-specific tax treatment and controlled change management.
+- Bigcapital’s AGPL-3.0 obligations and all third-party licences require legal review before redistribution or hosted commercial use.
+
+## Current limitations
+
+- No browser or production user interface for the AI copilot
+- No evidence of a completed live ledger connection or accountant-validated answer set
+- No automated tests, evaluation dataset, hallucination benchmark or regression suite
+- No user authentication or authorisation layer around the command-line agent
+- No structured redaction of sensitive data before model submission
+- No OCR, write tools, payment execution or automated journal posting in the custom AI layer
+- Bigcapital container versions are not pinned
+- API compatibility and failure behaviour require integration testing
+
+## Run locally
 
 ```bash
-cp .env.example .env      # fill in the secrets
-docker compose up -d      # starts Bigcapital + MariaDB + MongoDB + Redis
-```
+cp .env.example .env
+docker compose up -d
 
-Open http://localhost:3000 and complete the onboarding wizard (org name, base currency, fiscal year).
-
-### 2. Run the AI CFO layer
-
-```bash
 cd ai-cfo
 npm install
-npm run dev               # asks the CFO agent questions against your live ledger
+npm run dev -- "Summarise last month's profitability and liquidity risks."
 ```
 
-Set `ANTHROPIC_API_KEY` and `BIGCAPITAL_API_TOKEN` in `.env` first.
+Use only non-production test data until credentials, access controls, API compatibility and professional review have been completed.
 
-## Why this stack
+## Portfolio evidence
 
-- **Proven & tested** — Bigcapital ships full quote→invoice→payment→receipt→vendor flows plus a real double-entry ledger and standard reports, out of the box.
-- **AI-era differentiation** — the CFO copilot is the part that's genuinely ours; it reads the live ledger and answers the questions a finance director actually asks.
-- **Clean, delightful UI** — front-end work follows the `impeccable` design system (gstack).
-
-## License note
-
-Bigcapital is **AGPL-3.0** — fine for self-hosting our own business. If we ever resell this as a hosted SaaS, we must open-source our modifications. The `ai-cfo/` layer is ours to license as we choose.
-
-## Layout
-
-```
-docker-compose.yml     # self-host Bigcapital (Phase 1–2)
-.env.example           # all secrets in one place
-ai-cfo/                # Phase 3 — the Claude-powered CFO brain
-  src/
-    cfo-agent.ts       # Claude tool-runner agent over the ledger
-    ledger-tools.ts    # typed tools that read the Bigcapital API
-    index.ts           # CLI entry — ask the CFO a question
-```
-
-
----
-
-## Portfolio Status & Delivery Role
-
-**Status:** Architecture and integration prototype; not a substitute for regulated accounting, tax or professional financial advice.
-
-Product strategy, finance-workflow design and solution direction are led by **Zaiwin Kassim**, together with the **KOBIS AI Prodigy Team**, using supervised AI-assisted development.
-
-Production adoption requires accountant review, security hardening, backup and recovery, access controls, audit validation, licensing review and organisation-specific financial configuration.
+ZK Finance OS demonstrates AI tool design, read-only agent boundaries, financial-domain orchestration, containerised integration planning and honest separation between implemented capability and roadmap ambition.
